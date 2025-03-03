@@ -3,10 +3,11 @@ const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('User')
 const { isUndefined, isNotValidString, isValidPassword } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
+const handleErrorAsync = require('../utils/handleErrorAsync');
 
 const config = require('../config/index')
 const generateJWT = require('../utils/generateJWT')
-const appError = require('../utils/appError')
 
 const saltRounds = 10
 
