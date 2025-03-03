@@ -4,14 +4,13 @@ const logger = require('../utils/logger')('User')
 const { isUndefined, isNotValidString, isValidPassword } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
 const config = require('../config/index')
 const generateJWT = require('../utils/generateJWT')
 
 const saltRounds = 10
 
-const signup = handleErrorAsync(async (req, res, next) => {
+const signup = async (req, res, next) => {
   const { name, email, password } = req.body
 
   if (isUndefined(name) || isNotValidString(name) || isUndefined(email) || isNotValidString(email) || isUndefined(password) || isNotValidString(password)) {
@@ -56,9 +55,9 @@ const signup = handleErrorAsync(async (req, res, next) => {
       name: savedUser.name
     }
   })
-}, '建立使用者錯誤:')
+}
 
-const login = handleErrorAsync(async (req, res, next) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body
 
   if (isUndefined(email) || isNotValidString(email) || isUndefined(password) || isNotValidString(password)) {
@@ -105,9 +104,9 @@ const login = handleErrorAsync(async (req, res, next) => {
       name: existingUser.name
     }
   })
-}, '登入錯誤:')
+}
 
-const getProfile = handleErrorAsync(async (req, res, next) => {
+const getProfile = async (req, res, next) => {
   const { id } = req.user
 
   const userRepository = dataSource.getRepository('User')
@@ -117,9 +116,9 @@ const getProfile = handleErrorAsync(async (req, res, next) => {
   })
 
   handleSuccess(res, 200, user)
-}, '取得使用者資料錯誤:')
+}
 
-const updateProfile = handleErrorAsync(async (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   const { id } = req.user
   const { name } = req.body
 
@@ -158,6 +157,6 @@ const updateProfile = handleErrorAsync(async (req, res, next) => {
   })
 
   handleSuccess(res, 200, { user: result })
-}, '更新使用者資料錯誤:')
+}
 
 module.exports = { signup, login, getProfile, updateProfile }

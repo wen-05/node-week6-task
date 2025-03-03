@@ -3,17 +3,16 @@ const logger = require('../utils/logger')('CreditPackage')
 const { isUndefined, isNotValidString, isNotValidInteger } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
-const getCreditPackage = handleErrorAsync(async (req, res, next) => {
+const getCreditPackage = async (req, res, next) => {
   const creditPackage = await dataSource.getRepository('CreditPackage').find({
     select: ['id', 'name', 'credit_amount', 'price']
   })
 
   handleSuccess(res, 200, creditPackage)
-})
+}
 
-const createCreditPackage = handleErrorAsync(async (req, res, next) => {
+const createCreditPackage = async (req, res, next) => {
   const { name, credit_amount: creditAmount, price } = req.body
 
   if (isUndefined(name) || isNotValidString(name) ||
@@ -42,9 +41,9 @@ const createCreditPackage = handleErrorAsync(async (req, res, next) => {
   handleSuccess(res, 201, result)
 
 
-})
+}
 
-const purchaseCreditPackage = handleErrorAsync(async (req, res, next) => {
+const purchaseCreditPackage = async (req, res, next) => {
   const { id } = req.user
   const { creditPackageId } = req.params
 
@@ -67,9 +66,9 @@ const purchaseCreditPackage = handleErrorAsync(async (req, res, next) => {
   await creditPurchaseRepo.save(newPurchase)
 
   handleSuccess(res, 201, null)
-})
+}
 
-const deleteCreditPackage = handleErrorAsync(async (req, res, next) => {
+const deleteCreditPackage = async (req, res, next) => {
   const { creditPackageId } = req.params
 
   if (isUndefined(creditPackageId) || isNotValidString(creditPackageId)) {
@@ -85,6 +84,6 @@ const deleteCreditPackage = handleErrorAsync(async (req, res, next) => {
   }
 
   handleSuccess(res, 200, result)
-})
+}
 
 module.exports = { getCreditPackage, createCreditPackage, purchaseCreditPackage, deleteCreditPackage }

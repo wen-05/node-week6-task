@@ -3,9 +3,8 @@ const logger = require('../utils/logger')('Admin')
 const { isUndefined, isNotValidString, isNotValidInteger, isNotValidUUID } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
-const createCourse = handleErrorAsync(async (req, res, next) => {
+const createCourse = async (req, res, next) => {
   const {
     user_id: userId,
     skill_id: skillId,
@@ -63,9 +62,9 @@ const createCourse = handleErrorAsync(async (req, res, next) => {
   const course = await courseRepo.findOneBy({ id: savedCourse.id })
 
   handleSuccess(res, 201, { course })
-})
+}
 
-const editCourse = handleErrorAsync(async (req, res, next) => {
+const editCourse = async (req, res, next) => {
   const { courseId } = req.params
   const {
     skill_id: skillId,
@@ -121,9 +120,9 @@ const editCourse = handleErrorAsync(async (req, res, next) => {
   const savedCourse = await courseRepo.findOneBy({ id: courseId })
 
   handleSuccess(res, 200, { course: savedCourse })
-})
+}
 
-const changeRole = handleErrorAsync(async (req, res, next) => {
+const changeRole = async (req, res, next) => {
   const { userId } = req.params
   const {
     experience_years: experienceYears,
@@ -184,6 +183,6 @@ const changeRole = handleErrorAsync(async (req, res, next) => {
   })
 
   handleSuccess(res, 201, { user: savedUser, coach: savedCoach })
-})
+}
 
 module.exports = { createCourse, editCourse, changeRole }

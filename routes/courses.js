@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const coursesController = require('../controllers/coursesController')
+const handleErrorAsync = require('../utils/handleErrorAsync');
 
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Course')
@@ -13,8 +14,8 @@ const isAuth = require('../middlewares/isAuth')({
   logger
 })
 
-router.get('/', coursesController.getCourses)
-router.post('/:courseId', isAuth, coursesController.enrollCourse)
-router.delete('/:courseId', isAuth, coursesController.cancelCourse)
+router.get('/', handleErrorAsync(coursesController.getCourses))
+router.post('/:courseId', isAuth, handleErrorAsync(coursesController.enrollCourse))
+router.delete('/:courseId', isAuth, handleErrorAsync(coursesController.cancelCourse))
 
 module.exports = router

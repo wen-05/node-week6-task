@@ -3,9 +3,8 @@ const logger = require('../utils/logger')('Coach')
 const { isUndefined, isNotValidString, isNotValidInteger, isNotValidUUID } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
-const getList = handleErrorAsync(async (req, res, next) => {
+const getList = async (req, res, next) => {
   let { per, page } = req.query
   per = parseInt(per)    // 每頁筆數
   page = parseInt(page)  // 目前分頁
@@ -34,9 +33,9 @@ const getList = handleErrorAsync(async (req, res, next) => {
   }))
 
   handleSuccess(res, 200, result)
-})
+}
 
-const getDetail = handleErrorAsync(async (req, res, next) => {
+const getDetail = async (req, res, next) => {
   const { coachId } = req.params
 
   if (isUndefined(coachId) || isNotValidString(coachId) || !isNotValidUUID(coachId)) {
@@ -74,6 +73,6 @@ const getDetail = handleErrorAsync(async (req, res, next) => {
   }
 
   handleSuccess(res, 200, result)
-})
+}
 
 module.exports = { getList, getDetail }

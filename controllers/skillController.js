@@ -3,17 +3,16 @@ const logger = require('../utils/logger')('Skill')
 const { isUndefined, isNotValidString } = require('../utils/valid')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
-const getSkill = handleErrorAsync(async (req, res, next) => {
+const getSkill = async (req, res, next) => {
   const skill = await dataSource.getRepository('Skill').find({
     select: ['id', 'name']
   })
 
   handleSuccess(res, 200, skill)
-})
+}
 
-const createSkill = handleErrorAsync(async (req, res, next) => {
+const createSkill = async (req, res, next) => {
   const { name } = req.body
   if (isUndefined(name) || isNotValidString(name)) {
     next(appError(400, '欄位未填寫正確'))
@@ -34,9 +33,9 @@ const createSkill = handleErrorAsync(async (req, res, next) => {
 
   const result = await skillRepo.save(newSkill)
   handleSuccess(res, 200, result)
-})
+}
 
-const deleteSkill = handleErrorAsync(async (req, res, next) => {
+const deleteSkill = async (req, res, next) => {
   const skillId = req.url.split('/').pop()
 
   if (isUndefined(skillId) || isNotValidString(skillId)) {
@@ -51,6 +50,6 @@ const deleteSkill = handleErrorAsync(async (req, res, next) => {
   }
 
   handleSuccess(res, 200, result)
-})
+}
 
 module.exports = { getSkill, createSkill, deleteSkill }

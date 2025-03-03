@@ -2,11 +2,10 @@ const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Course')
 const { handleSuccess } = require('../utils/sendResponse')
 const appError = require('../utils/appError')
-const handleErrorAsync = require('../utils/handleErrorAsync');
 
 const { IsNull } = require('typeorm')
 
-const getCourses = handleErrorAsync(async (req, res, next) => {
+const getCourses = async (req, res, next) => {
   const courses = await dataSource.getRepository('Course').find({
     select: {
       id: true,
@@ -40,9 +39,9 @@ const getCourses = handleErrorAsync(async (req, res, next) => {
       skill_name: course.Skill.name
     }
   )))
-})
+}
 
-const enrollCourse = handleErrorAsync(async (req, res, next) => {
+const enrollCourse = async (req, res, next) => {
   const { id } = req.user
   const { courseId } = req.params
 
@@ -101,9 +100,9 @@ const enrollCourse = handleErrorAsync(async (req, res, next) => {
 
   await courseBookingRepo.save(newCourseBooking)
   handleSuccess(res, 201, null)
-})
+}
 
-const cancelCourse = handleErrorAsync(async (req, res, next) => {
+const cancelCourse = async (req, res, next) => {
   const { id } = req.user
   const { courseId } = req.params
 
@@ -138,6 +137,6 @@ const cancelCourse = handleErrorAsync(async (req, res, next) => {
   }
 
   handleSuccess(res, 200, null)
-})
+}
 
 module.exports = { getCourses, enrollCourse, cancelCourse }
