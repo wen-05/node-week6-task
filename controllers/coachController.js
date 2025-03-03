@@ -1,7 +1,8 @@
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Coach')
 const { isUndefined, isNotValidString, isNotValidInteger, isNotValidUUID } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
 
 const getList = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ const getList = async (req, res, next) => {
       isUndefined(page) || isNotValidInteger(page)) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -46,7 +47,7 @@ const getDetail = async (req, res, next) => {
     if (isUndefined(coachId) || isNotValidString(coachId) || !isNotValidUUID(coachId)) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -57,7 +58,7 @@ const getDetail = async (req, res, next) => {
 
     if (!coachDetail) {
       logger.warn('找不到該教練')
-      handleFailed(res, 400, '找不到該教練')
+      next(appError(400, '找不到該教練'))
       return
     }
 

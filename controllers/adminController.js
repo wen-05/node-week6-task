@@ -1,7 +1,8 @@
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Admin')
 const { isUndefined, isNotValidString, isNotValidInteger, isNotValidUUID } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
 
 const createCourse = async (req, res, next) => {
   try {
@@ -26,7 +27,7 @@ const createCourse = async (req, res, next) => {
       isUndefined(meetingUrl) || isNotValidString(meetingUrl) || !meetingUrl.startsWith('https')) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -38,11 +39,11 @@ const createCourse = async (req, res, next) => {
 
     if (!existingUser) {
       logger.warn('使用者不存在')
-      handleFailed(res, 400, '使用者不存在')
+      next(appError(400, '使用者不存在'))
       return
     } else if (existingUser.role !== 'COACH') {
       logger.warn('使用者尚未成為教練')
-      handleFailed(res, 400, '使用者尚未成為教練')
+      next(appError(400, '使用者尚未成為教練'))
       return
     }
 
@@ -92,7 +93,7 @@ const editCourse = async (req, res, next) => {
       isUndefined(meetingUrl) || isNotValidString(meetingUrl) || !meetingUrl.startsWith('https')) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -101,7 +102,7 @@ const editCourse = async (req, res, next) => {
 
     if (!existingCourse) {
       logger.warn('課程不存在')
-      handleFailed(res, 400, '課程不存在')
+      next(appError(400, '課程不存在'))
       return
     }
 
@@ -119,7 +120,7 @@ const editCourse = async (req, res, next) => {
 
     if (updateCourse.affected === 0) {
       logger.warn('更新課程失敗')
-      handleFailed(res, 400, '更新課程失敗')
+      next(appError(400, '更新課程失敗'))
       return
     }
 
@@ -145,14 +146,14 @@ const changeRole = async (req, res, next) => {
     if (!isNotValidUUID(userId) || isUndefined(experienceYears) || isNotValidInteger(experienceYears) || isUndefined(description) || isNotValidString(description)) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
     if (profileImageUrl && !isNotValidString(profileImageUrl) && !profileImageUrl.startsWith('https')) {
 
       logger.warn('大頭貼網址錯誤')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -164,11 +165,11 @@ const changeRole = async (req, res, next) => {
 
     if (!existingUser) {
       logger.warn('使用者不存在')
-      handleFailed(res, 400, '使用者不存在')
+      next(appError(400, '使用者不存在'))
       return
     } else if (existingUser.role === 'COACH') {
       logger.warn('使用者已經是教練')
-      handleFailed(res, 409, '使用者已經是教練')
+      next(appError(409, '使用者已經是教練'))
       return
     }
 
@@ -184,7 +185,7 @@ const changeRole = async (req, res, next) => {
 
     if (updatedUser.affected === 0) {
       logger.warn('更新使用者失敗')
-      handleFailed(res, 400, '更新使用者失敗')
+      next(appError(400, '更新使用者失敗'))
       return
     }
 

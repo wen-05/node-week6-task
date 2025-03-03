@@ -1,7 +1,8 @@
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Skill')
 const { isUndefined, isNotValidString } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
 
 const getSkill = async (req, res, next) => {
   try {
@@ -21,7 +22,7 @@ const createSkill = async (req, res, next) => {
   try {
     const { name } = req.body
     if (isUndefined(name) || isNotValidString(name)) {
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -29,7 +30,7 @@ const createSkill = async (req, res, next) => {
     const existSkill = await skillRepo.findBy({ name })
 
     if (existSkill.length > 0) {
-      handleFailed(res, 409, '資料重複')
+      next(appError(409, '資料重複'))
       return
     }
 
@@ -51,13 +52,13 @@ const deleteSkill = async (req, res, next) => {
     const skillId = req.url.split('/').pop()
 
     if (isUndefined(skillId) || isNotValidString(skillId)) {
-      handleFailed(res, 400, 'ID錯誤')
+      next(appError(400, 'ID錯誤'))
       return
     }
 
     const result = await dataSource.getRepository('Skill').delete(skillId)
     if (result.affected === 0) {
-      handleFailed(res, 400, 'ID錯誤')
+      next(appError(400, 'ID錯誤'))
       return
     }
 

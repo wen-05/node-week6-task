@@ -1,7 +1,7 @@
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('Course')
-const { isUndefined, isNotValidString, isNotValidInteger, isNotValidUUID } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
 
 const { IsNull } = require('typeorm')
 
@@ -54,7 +54,7 @@ const enrollCourse = async (req, res, next) => {
     const courseRepo = dataSource.getRepository('Course')
     const course = await courseRepo.findOneBy({ id: courseId })
     if (!course) {
-      handleFailed(res, 400, "ID錯誤")
+      next(appError(400, "ID錯誤"))
       return
     }
 
@@ -69,7 +69,7 @@ const enrollCourse = async (req, res, next) => {
     })
 
     if (userCourseBooking) {
-      handleFailed(res, 400, "已經報名過此課程")
+      next(appError(400, "已經報名過此課程"))
       return
     }
 
@@ -92,10 +92,10 @@ const enrollCourse = async (req, res, next) => {
     })
 
     if (userUsedCredit >= userCredit) {
-      handleFailed(res, 400, "已無可使用堂數")
+      next(appError(400, "已無可使用堂數"))
       return
     } else if (courseBookingCount >= course.max_participants) {
-      handleFailed(res, 400, "已達最大參加人數，無法參加")
+      next(appError(400, "已達最大參加人數，無法參加"))
       return
     }
 
@@ -127,7 +127,7 @@ const cancelCourse = async (req, res, next) => {
     })
 
     if (!userCourseBooking) {
-      handleFailed(res, 400, "ID錯誤")
+      next(appError(400, "ID錯誤"))
       return
     }
 
@@ -143,7 +143,7 @@ const cancelCourse = async (req, res, next) => {
     )
 
     if (updateResult.affected === 0) {
-      handleFailed(res, 400, "取消失敗")
+      next(appError(400, "取消失敗"))
       return
     }
 

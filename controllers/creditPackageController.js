@@ -1,7 +1,8 @@
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('CreditPackage')
 const { isUndefined, isNotValidString, isNotValidInteger } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
+const appError = require('../utils/appError')
 
 const getCreditPackage = async (req, res, next) => {
   try {
@@ -25,7 +26,7 @@ const createCreditPackage = async (req, res, next) => {
       isUndefined(creditAmount) || isNotValidInteger(creditAmount) ||
       isUndefined(price) || isNotValidInteger(price)) {
 
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -33,7 +34,7 @@ const createCreditPackage = async (req, res, next) => {
     const existCreditPurchase = await creditPurchaseRepo.findBy({ name })
 
     if (existCreditPurchase.length > 0) {
-      handleFailed(res, 409, '資料重複')
+      next(appError(409, '資料重複'))
       return
     }
 
@@ -61,7 +62,7 @@ const purchaseCreditPackage = async (req, res, next) => {
     const creditPackage = await creditPackageRepo.findOneBy({ id: creditPackageId })
 
     if (!creditPackage) {
-      handleFailed(res, 400, 'ID錯誤')
+      next(appError(400, 'ID錯誤'))
       return
     }
 
@@ -88,14 +89,14 @@ const deleteCreditPackage = async (req, res, next) => {
     const { creditPackageId } = req.params
 
     if (isUndefined(creditPackageId) || isNotValidString(creditPackageId)) {
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
     const result = await dataSource.getRepository('CreditPackage').delete(creditPackageId)
 
     if (result.affected === 0) {
-      handleFailed(res, 400, 'ID錯誤')
+      next(appError(400, 'ID錯誤'))
       return
     }
 

@@ -2,10 +2,11 @@ const bcrypt = require('bcrypt')
 const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('User')
 const { isUndefined, isNotValidString, isValidPassword } = require('../utils/valid')
-const { handleSuccess, handleFailed } = require('../utils/sendResponse')
+const { handleSuccess } = require('../utils/sendResponse')
 
 const config = require('../config/index')
 const generateJWT = require('../utils/generateJWT')
+const appError = require('../utils/appError')
 
 const saltRounds = 10
 
@@ -16,13 +17,13 @@ const signup = async (req, res, next) => {
     if (isUndefined(name) || isNotValidString(name) || isUndefined(email) || isNotValidString(email) || isUndefined(password) || isNotValidString(password)) {
 
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
     if (!isValidPassword(password)) {
       logger.warn('建立使用者錯誤: 密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
-      handleFailed(res, 400, '密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
+      next(appError(400, '密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字'))
       return
     }
 
@@ -33,7 +34,7 @@ const signup = async (req, res, next) => {
 
     if (existingUser) {
       logger.warn('建立使用者錯誤: Email 已被使用')
-      handleFailed(res, 409, 'Email 已被使用')
+      next(appError(409, 'Email 已被使用'))
       return
     }
 
@@ -67,7 +68,7 @@ const login = async (req, res, next) => {
 
     if (isUndefined(email) || isNotValidString(email) || isUndefined(password) || isNotValidString(password)) {
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -79,7 +80,7 @@ const login = async (req, res, next) => {
     })
 
     if (!existingUser) {
-      handleFailed(res, 400, '使用者不存在')
+      next(appError(400, '使用者不存在'))
       return
     }
 
@@ -87,13 +88,13 @@ const login = async (req, res, next) => {
 
     if (!isValidPassword(password)) {
       logger.warn('密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
-      handleFailed(res, 400, '密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
+      next(appError(400, '密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字'))
       return
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password)
     if (!isMatch) {
-      handleFailed(res, 400, '密碼輸入錯誤')
+      next(appError(400, '密碼輸入錯誤'))
       return
     }
 
@@ -141,7 +142,7 @@ const updateProfile = async (req, res, next) => {
 
     if (isUndefined(name) || isNotValidString(name)) {
       logger.warn('欄位未填寫正確')
-      handleFailed(res, 400, '欄位未填寫正確')
+      next(appError(400, '欄位未填寫正確'))
       return
     }
 
@@ -152,7 +153,7 @@ const updateProfile = async (req, res, next) => {
     })
 
     if (user.name === name) {
-      handleFailed(res, 400, '使用者名稱未變更')
+      next(appError(400, '使用者名稱未變更'))
       return
     }
 
@@ -164,7 +165,7 @@ const updateProfile = async (req, res, next) => {
     })
 
     if (updatedResult.affected === 0) {
-      handleFailed(res, 400, '更新使用者資料失敗')
+      next(appError(400, '更新使用者資料失敗'))
       return
     }
 
