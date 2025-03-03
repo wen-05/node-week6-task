@@ -4,6 +4,9 @@ const logger = require('../utils/logger')('User')
 const { isUndefined, isNotValidString, isValidPassword } = require('../utils/valid')
 const { handleSuccess, handleFailed } = require('../utils/sendResponse')
 
+const config = require('../config/index')
+const generateJWT = require('../utils/generateJWT')
+
 const saltRounds = 10
 
 const signup = async (req, res, next) => {
@@ -58,4 +61,124 @@ const signup = async (req, res, next) => {
   }
 }
 
-module.exports = { signup }
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body
+
+    if (isUndefined(email) || isNotValidString(email) || isUndefined(password) || isNotValidString(password)) {
+      logger.warn('欄位未填寫正確')
+      handleFailed(res, 400, '欄位未填寫正確')
+      return
+    }
+
+
+    const userRepository = dataSource.getRepository('User')
+    const existingUser = await userRepository.findOne({
+      select: ['id', 'name', 'password'],
+      where: { email }
+    })
+
+    if (!existingUser) {
+      handleFailed(res, 400, '使用者不存在')
+      return
+    }
+
+    logger.info(`使用者資料: ${JSON.stringify(existingUser)}`)
+
+    if (!isValidPassword(password)) {
+      logger.warn('密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
+      handleFailed(res, 400, '密碼不符合規則，需要包含英文數字大小寫，最短8個字，最長16個字')
+      return
+    }
+
+    const isMatch = await bcrypt.compare(password, existingUser.password)
+    if (!isMatch) {
+      handleFailed(res, 400, '密碼輸入錯誤')
+      return
+    }
+
+    const token = await generateJWT({
+      id: existingUser.id
+    }, config.get('secret.jwtSecret'), {
+      expiresIn: `${config.get('secret.jwtExpiresDay')}`
+    })
+
+    handleSuccess(res, 201, {
+      token,
+      user: {
+        name: existingUser.name
+      }
+    })
+
+  } catch (error) {
+    logger.error('登入錯誤:', error)
+    next(error)
+  }
+}
+
+const getProfile = async (req, res, next) => {
+  try {
+    const { id } = req.user
+
+    const userRepository = dataSource.getRepository('User')
+    const user = await userRepository.findOne({
+      select: ['name', 'email'],
+      where: { id }
+    })
+
+    handleSuccess(res, 200, user)
+
+  } catch (error) {
+    logger.error('取得使用者資料錯誤:', error)
+    next(error)
+  }
+}
+
+const updateProfile = async (req, res, next) => {
+  try {
+    const { id } = req.user
+    const { name } = req.body
+
+    if (isUndefined(name) || isNotValidString(name)) {
+      logger.warn('欄位未填寫正確')
+      handleFailed(res, 400, '欄位未填寫正確')
+      return
+    }
+
+    const userRepository = dataSource.getRepository('User')
+    const user = await userRepository.findOne({
+      select: ['name'],
+      where: { id }
+    })
+
+    if (user.name === name) {
+      handleFailed(res, 400, '使用者名稱未變更')
+      return
+    }
+
+    const updatedResult = await userRepository.update({
+      id,
+      name: user.name
+    }, {
+      name
+    })
+
+    if (updatedResult.affected === 0) {
+      handleFailed(res, 400, '更新使用者資料失敗')
+      return
+    }
+
+    const result = await userRepository.findOne({
+      select: ['name'],
+      where: { id }
+    })
+
+    handleSuccess(res, 200, { user: result })
+
+  } catch (error) {
+    logger.error('取得使用者資料錯誤:', error)
+    next(error)
+  }
+}
+
+module.exports = { signup, login, getProfile, updateProfile }

@@ -1,10 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-const userController = require('../controllers/userController')
+const coursesController = require('../controllers/coursesController')
 
 const { dataSource } = require('../db/data-source')
-const logger = require('../utils/logger')('User')
+const logger = require('../utils/logger')('Course')
 const config = require('../config/index')
 
 const isAuth = require('../middlewares/isAuth')({
@@ -13,9 +13,8 @@ const isAuth = require('../middlewares/isAuth')({
   logger
 })
 
-router.post('/signup', userController.signup)
-router.post('/login', userController.login)
-router.get('/profile', isAuth, userController.getProfile)
-router.put('/profile', isAuth, userController.updateProfile)
+router.get('/', coursesController.getCourses)
+router.post('/:courseId', isAuth, coursesController.enrollCourse)
+router.delete('/:courseId', isAuth, coursesController.cancelCourse)
 
 module.exports = router

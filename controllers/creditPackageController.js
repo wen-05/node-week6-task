@@ -52,6 +52,37 @@ const createCreditPackage = async (req, res, next) => {
   }
 }
 
+const purchaseCreditPackage = async (req, res, next) => {
+  try {
+    const { id } = req.user
+    const { creditPackageId } = req.params
+
+    const creditPackageRepo = dataSource.getRepository('CreditPackage')
+    const creditPackage = await creditPackageRepo.findOneBy({ id: creditPackageId })
+
+    if (!creditPackage) {
+      handleFailed(res, 400, 'ID錯誤')
+      return
+    }
+
+    const creditPurchaseRepo = dataSource.getRepository('CreditPurchase')
+    const newPurchase = await creditPurchaseRepo.create({
+      user_id: id,
+      credit_package_id: creditPackageId,
+      purchased_credits: creditPackage.credit_amount,
+      price_paid: creditPackage.price,
+      purchaseAt: new Date().toISOString()
+    })
+    await creditPurchaseRepo.save(newPurchase)
+
+    handleSuccess(res, 201, null)
+
+  } catch (error) {
+    logger.error(error)
+    next(error)
+  }
+}
+
 const deleteCreditPackage = async (req, res, next) => {
   try {
     const { creditPackageId } = req.params
@@ -76,4 +107,4 @@ const deleteCreditPackage = async (req, res, next) => {
   }
 }
 
-module.exports = { getCreditPackage, createCreditPackage, deleteCreditPackage }
+module.exports = { getCreditPackage, createCreditPackage, purchaseCreditPackage, deleteCreditPackage }
